@@ -10,7 +10,7 @@ from dotenv import load_dotenv # Import the new library
 load_dotenv() # This line finds the .env file and loads the variables from it
 
 app = Flask(__name__)
-CORS(app) 
+CORS(app, origins=["https://ai-code-commenter.onrender.com"])
 
 # --- Securely Configure the AI ---
 # The script now gets the key from the .env file loaded above
