@@ -1,71 +1,223 @@
-# app.py - Your Secure Flask Backend (Serves Frontend + API)
+<!DOCTYPE html>
+<html lang="en" class="dark"> <!-- Default to dark mode -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Code Commenter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #fe5e15; /* A nice light blue */
+            animation: spin 1s ease infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Custom scrollbar for a modern look */
+        textarea::-webkit-scrollbar {
+            width: 8px;
+        }
+        textarea::-webkit-scrollbar-track {
+            background: #284165; /* gray-800 */
+        }
+        textarea::-webkit-scrollbar-thumb {
+            background-color: #ff8000; /* gray-600 */
+            border-radius: 4px;
+        }
+        #outputContainer::-webkit-scrollbar {
+            width: 8px;
+        }
+        #outputContainer::-webkit-scrollbar-track {
+            background: #133c72; /* gray-800 */
+        }
+        #outputContainer::-webkit-scrollbar-thumb {
+            background-color: #ea4b07; /* gray-600 */
+            border-radius: 4px;
+        }
+    </style>
+    <script>
+        // Set theme based on localStorage or system preference
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark')
+        } else {
+          document.documentElement.classList.remove('dark')
+        }
+    </script>
+</head>
+<body class="bg-gray-900 text-gray-300 flex items-center justify-center min-h-screen p-4 transition-colors duration-300">
 
-import os
-import google.generativeai as genai
-from flask import Flask, request, jsonify, send_from_directory
-from flask_cors import CORS
-from dotenv import load_dotenv
+    <div class="w-full max-w-5xl mx-auto">
+        <div class="bg-gray-800/50 backdrop-blur-xl border border-gray-700 rounded-2xl shadow-2xl shadow-blue-500/10 p-6 sm:p-8">
+            
+            <!-- Header and Theme Toggle -->
+            <div class="flex justify-between items-center mb-8">
+                <div class="text-left">
+                    <h1 class="text-3xl sm:text-4xl font-bold text-white">AI Code Commenter</h1>
+                    <p class="text-gray-400 mt-2">Paste your Python code and let AI do the documenting.</p>
+                </div>
+                <button id="theme-toggle" class="p-2 rounded-full text-gray-400 hover:bg-gray-700 hover:text-white transition">
+                    <!-- Sun and Moon Icons -->
+                    <svg id="theme-toggle-dark-icon" class="hidden w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                    <svg id="theme-toggle-light-icon" class="hidden w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+                </button>
+            </div>
 
-# --- Initialization ---
-load_dotenv()
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <div>
+                    <label for="codeInput" class="block text-sm font-medium text-gray-300 mb-2">Your Python Code</label>
+                    <textarea id="codeInput" class="w-full h-80 p-4 border border-gray-700 rounded-lg font-mono text-sm bg-gray-900 text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"></textarea>
+                </div>
 
-# Tell Flask where to find the static files (our index.html)
-app = Flask(__name__, static_folder='static')
+                <div>
+                    <label for="codeOutput" class="block text-sm font-medium text-gray-300 mb-2">Commented Code</label>
+                    <div id="outputContainer" class="w-full h-80 p-4 border border-gray-700 rounded-lg font-mono text-sm bg-gray-900 overflow-auto relative">
+                        <pre><code id="codeOutput" class="whitespace-pre-wrap text-gray-300"></code></pre>
+                        <div id="loadingSpinner" class="hidden absolute inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center rounded-lg">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-# Set up CORS. It's still good practice, especially for development.
-CORS(app) 
+            <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+                <button id="generateBtn" class="w-full sm:w-auto bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-transform transform hover:scale-105 disabled:opacity-50 disabled:scale-100">
+                    Generate Comments
+                </button>
+                <button id="copyBtn" class="w-full sm:w-auto bg-gray-600 text-gray-200 font-semibold px-6 py-3 rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition disabled:opacity-50" disabled>
+                    Copy to Clipboard
+                </button>
+            </div>
+            <div id="messageBox" class="mt-4 text-center text-sm h-5"></div>
 
-# --- Securely Configure the AI ---
-try:
-    api_key = os.getenv("GOOGLE_API_KEY")
-    if not api_key:
-        raise ValueError("API key not found. Please set the GOOGLE_API_KEY environment variable.")
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-1.5-flash')
-except Exception as e:
-    print(f"Error during initialization: {e}")
-    model = None
+        </div>
+    </div>
 
-# --- Route 1: The "Front Door" to Serve the Webpage ---
-@app.route('/')
-def serve_index():
-    """Serves the main index.html file from the 'static' folder."""
-    return send_from_directory(app.static_folder, 'index.html')
+    <script>
+        // --- DOM Elements ---
+        const codeInput = document.getElementById('codeInput');
+        const codeOutput = document.getElementById('codeOutput');
+        const generateBtn = document.getElementById('generateBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const messageBox = document.getElementById('messageBox');
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const darkIcon = document.getElementById('theme-toggle-dark-icon');
+        const lightIcon = document.getElementById('theme-toggle-light-icon');
 
-# --- Route 2: The "Back Door" API Endpoint ---
-@app.route('/generate', methods=['POST'])
-def generate():
-    """Receives code from the frontend, gets comments from the AI, and returns them."""
-    if not model:
-        return jsonify({"error": "Server is not configured correctly. Check API key."}), 500
+        // --- Theme Toggle Logic ---
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+            const isDarkMode = document.documentElement.classList.contains('dark');
+            localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+            updateThemeIcons();
+            // Manually toggle body background for smooth transition
+            if (isDarkMode) {
+                document.body.classList.remove('bg-gray-100');
+                document.body.classList.add('bg-gray-900');
+            } else {
+                document.body.classList.remove('bg-gray-900');
+                document.body.classList.add('bg-gray-100');
+            }
+        }
 
-    data = request.get_json()
-    if not data or 'code' not in data:
-        return jsonify({"error": "No code provided in the request."}), 400
-    
-    user_code = data['code']
+        function updateThemeIcons() {
+            if (document.documentElement.classList.contains('dark')) {
+                darkIcon.classList.remove('hidden');
+                lightIcon.classList.add('hidden');
+            } else {
+                darkIcon.classList.add('hidden');
+                lightIcon.classList.remove('hidden');
+            }
+        }
+        
+        themeToggleBtn.addEventListener('click', toggleTheme);
+        // Set initial icon state on page load
+        updateThemeIcons();
+        // Set initial body background
+        if (!document.documentElement.classList.contains('dark')) {
+            document.body.classList.remove('bg-gray-900');
+            document.body.classList.add('bg-gray-100');
+        }
 
-    prompt = f"""
-    Your task is to act as an expert Python programmer documenting a script.
-    Add a concise, one-line comment directly above each functional line of the following Python code.
-    Do not add comments to blank lines, lines that are already comments, or import statements.
-    Do not change the original code.
-    Return only the fully commented Python code.
 
-    Here is the script:
-    {user_code}
-    """
+        // --- Main App Logic ---
+        async function generateComments() {
+            const userCode = codeInput.value.trim();
+            if (!userCode) {
+                showMessage('Please paste some code to comment.', 'orange');
+                return;
+            }
 
-    try:
-        response = model.generate_content(prompt)
-        commented_code = response.text
-        return jsonify({"commented_code": commented_code})
-    except Exception as e:
-        print(f"An error occurred during AI generation: {e}")
-        return jsonify({"error": f"An error occurred during AI generation: {e}"}), 500
+            loadingSpinner.classList.remove('hidden');
+            generateBtn.disabled = true;
+            generateBtn.innerText = 'Generating...';
+            codeOutput.textContent = '';
+            showMessage('');
 
-# This part is for running the app locally on your computer
-if __name__ == '__main__':
-    app.run(port=5000, debug=True)
+                const apiUrl = '/generate';
 
-```
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: userCode }),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || `HTTP error! status: ${response.status}`);
+                }
+                
+                codeOutput.textContent = data.commented_code.trim();
+                copyBtn.disabled = false;
+                showMessage('Comments generated successfully!', '#22c55e'); // green-500
+
+            } catch (error) {
+                console.error("API Error:", error);
+                codeOutput.textContent = `An error occurred: ${error.message}`;
+                showMessage('An error occurred. Is the server running?', '#ef4444'); // red-500
+            } finally {
+                loadingSpinner.classList.add('hidden');
+                generateBtn.disabled = false;
+                generateBtn.innerText = 'Generate Comments';
+            }
+        }
+
+        function copyToClipboard() {
+            const textToCopy = codeOutput.textContent;
+            if (!textToCopy) return;
+            const textArea = document.createElement('textarea');
+            textArea.value = textToCopy;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showMessage('Copied to clipboard!', '#22c55e');
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+                showMessage('Failed to copy text.', '#ef4444');
+            }
+            document.body.removeChild(textArea);
+        }
+        
+        function showMessage(message, color = '#9ca3af') { // gray-400
+            messageBox.textContent = message;
+            messageBox.style.color = color;
+        }
+
+        generateBtn.addEventListener('click', generateComments);
+        copyBtn.addEventListener('click', copyToClipboard);
+    </script>
+</body>
+</html>

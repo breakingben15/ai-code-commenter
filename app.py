@@ -1,30 +1,38 @@
-# app.py - Your Secure Flask Backend
+# app.py - Your Secure Flask Backend (Serves Frontend + API)
 
 import os
 import google.generativeai as genai
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
-from dotenv import load_dotenv # Import the new library
+from dotenv import load_dotenv
 
 # --- Initialization ---
-load_dotenv() # This line finds the .env file and loads the variables from it
+load_dotenv()
 
-app = Flask(__name__)
-CORS(app, origins=["https://ai-code-commenter.onrender.com"])
+# Tell Flask where to find the static files (our index.html)
+app = Flask(__name__, static_folder='static')
+
+# Set up CORS. It's still good practice, especially for development.
+CORS(app) 
 
 # --- Securely Configure the AI ---
-# The script now gets the key from the .env file loaded above
 try:
-    api_key = os.getenv("GOOGLE_API_KEY") # Use os.getenv() which reads loaded variables
+    api_key = os.getenv("GOOGLE_API_KEY")
     if not api_key:
-        raise ValueError("API key not found. Make sure you have a .env file with GOOGLE_API_KEY='YOUR_KEY'")
+        raise ValueError("API key not found. Please set the GOOGLE_API_KEY environment variable.")
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel('gemini-1.5-flash')
 except Exception as e:
     print(f"Error during initialization: {e}")
-    model = None 
+    model = None
 
-# --- API Endpoint ---
+# --- Route 1: The "Front Door" to Serve the Webpage ---
+@app.route('/')
+def serve_index():
+    """Serves the main index.html file from the 'static' folder."""
+    return send_from_directory(app.static_folder, 'index.html')
+
+# --- Route 2: The "Back Door" API Endpoint ---
 @app.route('/generate', methods=['POST'])
 def generate():
     """Receives code from the frontend, gets comments from the AI, and returns them."""
@@ -54,8 +62,9 @@ def generate():
         return jsonify({"commented_code": commented_code})
     except Exception as e:
         print(f"An error occurred during AI generation: {e}")
-        return jsonify({"error": f"An error occurred: {e}"}), 500
+        return jsonify({"error": f"An error occurred during AI generation: {e}"}), 500
 
-# --- Run the App ---
+# This part is for running the app locally on your computer
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
+
