@@ -46,11 +46,12 @@ def generate():
     user_code = data['code']
 
     prompt = f"""
-    Your task is to act as an expert Python programmer documenting a script.
+    Your task is to act as an expert Python programmer documenting and debugging a script.
     Add a concise, one-line comment directly above each functional line of the following Python code.
+    If there is a bug in that same line of code document those in parenthesise.
     Do not add comments to blank lines, lines that are already comments, or import statements.
     Do not change the original code.
-    Return only the fully commented Python code.
+    Return only the fully commented Python code and documented bugs.
 
     Here is the script:
     {user_code}
