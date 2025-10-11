@@ -1,4 +1,5 @@
 # app.py - Your Secure Flask Backend (Serves Frontend + API)
+# app.py - Your Secure Flask Backend (Serves Frontend + API)
 
 import os
 import google.generativeai as genai
@@ -21,7 +22,8 @@ try:
     if not api_key:
         raise ValueError("API key not found. Please set the GOOGLE_API_KEY environment variable.")
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    # Use the stable 'gemini-pro' model to ensure compatibility and prevent errors.
+    model = genai.GenerativeModel('gemini-pro')
 except Exception as e:
     print(f"Error during initialization: {e}")
     model = None
@@ -46,12 +48,11 @@ def generate():
     user_code = data['code']
 
     prompt = f"""
-    Your task is to act as an expert Python programmer documenting and debugging a script.
+    Your task is to act as an expert Python programmer documenting a script.
     Add a concise, one-line comment directly above each functional line of the following Python code.
-    If there is a bug in that same line of code document those in parenthesise.
     Do not add comments to blank lines, lines that are already comments, or import statements.
     Do not change the original code.
-    Return only the fully commented Python code and documented bugs.
+    Return only the fully commented Python code.
 
     Here is the script:
     {user_code}
@@ -65,7 +66,7 @@ def generate():
         print(f"An error occurred during AI generation: {e}")
         return jsonify({"error": f"An error occurred during AI generation: {e}"}), 500
 
-# This part is for running the app locally on your computer
+# This part is only for running the app locally on your computer
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
 
