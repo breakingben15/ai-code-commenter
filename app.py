@@ -54,7 +54,7 @@ You must not change, fix, or refactor any of the existing code logic. Only add d
 
 **Documentation Rules:**
 
-1.  **MANDATORY DOCSTRINGS:** For *every* function (`def`), you **must** add a PEP 257 compliant docstring immediately under the definition line, enclosed in `"""triple quotes"""`.
+1.  **MANDATORY DOCSTRINGS:** For *every* function (`def`), you **must** add a PEP 257 compliant docstring immediately under the definition line, enclosed in `\"\"\"triple quotes\"\"\"`.
 2.  **DOCSTRING CONTENT:** Each docstring **must** include:
     * A brief, one-sentence summary of the function's purpose.
     * `Args:` section: List each parameter (if any), its type, and a description.
