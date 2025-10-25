@@ -48,15 +48,29 @@ def generate():
     user_code = data['code']
 
     prompt = f"""
-    Your task is to act as an expert Python programmer documenting a script.
-    Add a concise, one-line comment directly above each functional line of the following Python code.
-    Do not add comments to blank lines, lines that are already comments, or import statements.
-    Do not change the original code.
-    Return only the fully commented Python code.
+You are an expert Python programmer specializing in PEP 257 documentation standards.
+Your **primary and mandatory task** is to add professional docstrings to the given Python code.
+You must not change, fix, or refactor any of the existing code logic. Only add documentation.
 
-    Here is the script:
-    {user_code}
-    """
+**Documentation Rules:**
+
+1.  **MANDATORY DOCSTRINGS:** For *every* function (`def`), you **must** add a PEP 257 compliant docstring immediately under the definition line, enclosed in `"""triple quotes"""`.
+2.  **DOCSTRING CONTENT:** Each docstring **must** include:
+    * A brief, one-sentence summary of the function's purpose.
+    * `Args:` section: List each parameter (if any), its type, and a description.
+    * `Returns:` section: Describe the return value (if any) and its type.
+3.  **INLINE COMMENTS (MINIMAL):**
+    * **DO NOT** add an inline comment (`#`) for every single line. This is bad practice.
+    * Only add a brief inline comment (`#`) above a line *if* the logic is complex or non-obvious. For simple code, you might not need any.
+    
+Your priority is the `"""docstrings"""`. Return only the fully documented Python code.
+
+---
+Here is the code to document:
+---
+
+{user_code}
+"""
 
     try:
         response = model.generate_content(prompt)
