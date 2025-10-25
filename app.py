@@ -63,7 +63,7 @@ You must not change, fix, or refactor any of the existing code logic. Only add d
     * **DO NOT** add an inline comment (`#`) for every single line. This is bad practice.
     * Only add a brief inline comment (`#`) above a line *if* the logic is complex or non-obvious. For simple code, you might not need any.
     
-Your priority is the `"""docstrings"""`. Return only the fully documented Python code.
+Your priority is the `\"\"\"docstrings\"\"\"`. Return only the fully documented Python code.
 
 ---
 Here is the code to document:
