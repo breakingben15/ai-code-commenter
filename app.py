@@ -23,7 +23,7 @@ try:
         raise ValueError("API key not found. Please set the GOOGLE_API_KEY environment variable.")
     genai.configure(api_key=api_key)
     # Use the stable 'gemini-pro' model to ensure compatibility and prevent errors.
-    model = genai.GenerativeModel('gemini-1.5-pro-latest')
+    model = genai.GenerativeModel('gemini-1.5-pro')
 except Exception as e:
     print(f"Error during initialization: {e}")
     model = None
