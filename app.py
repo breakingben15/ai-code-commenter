@@ -48,22 +48,29 @@ def generate():
     user_code = data['code']
 
     prompt = f"""
-You are an expert Python programmer specializing in PEP 257 documentation standards.
-Your **primary and mandatory task** is to add professional docstrings to the given Python code.
-You must not change, fix, or refactor any of the existing code logic. Only add documentation.
+You are an expert Python programmer and code reviewer.
+Your task is to add professional documentation and constructive suggestions to the given code.
+
+**CRITICAL RULE: DO NOT CHANGE OR FIX ANY CODE.**
+You must return the code EXACTLY as it was given.
 
 **Documentation Rules:**
 
 1.  **MANDATORY DOCSTRINGS:** For *every* function (`def`), you **must** add a PEP 257 compliant docstring immediately under the definition line, enclosed in `\"\"\"triple quotes\"\"\"`.
 2.  **DOCSTRING CONTENT:** Each docstring **must** include:
-    * A brief, one-sentence summary of the function's purpose.
-    * `Args:` section: List each parameter (if any), its type, and a description.
-    * `Returns:` section: Describe the return value (if any) and its type.
-3.  **INLINE COMMENTS (MINIMAL):**
-    * **DO NOT** add an inline comment (`#`) for every single line. This is bad practice.
-    * Only add a brief inline comment (`#`) above a line *if* the logic is complex or non-obvious. For simple code, you might not need any.
+    * A brief, one-sentence summary.
+    * `Args:` section: List each parameter, its type, and a description.
+    * `Returns:` section: Describe the return value and its type.
+3.  **BUG IDENTIFICATION (NEW RULE):**
+    * If you identify a clear bug in the code (like an infinite loop or an uninitialized variable), **DO NOT FIX IT**.
+    * Instead, add a single inline comment (`#`) on the line *directly above* the bug.
+    * This comment must start with `SUGGESTION:` and briefly explain the bug and the potential fix.
+    * Example: `# SUGGESTION: This creates an infinite loop. Consider adding a new input() call in this else block.`
+4.  **INLINE COMMENTS (MINIMAL):**
+    * **DO NOT** add an inline comment for every single line.
+    * Only add brief comments for complex logic *that is not* a bug.
     
-Your priority is the `\"\"\"docstrings\"\"\"`. Return only the fully documented Python code.
+Your priority is the `\"\"\"docstrings\"\"\"` and the `SUGGESTION:` comments. Return only the documented Python code.
 
 ---
 Here is the code to document:
