@@ -13,13 +13,7 @@ load_dotenv()
 # Tell Flask where to find the static files (our index.html)
 app = Flask(__name__, static_folder='static')
 
-@app.route('/health')
-def health_check():
-    return "Alive", 200
 
-@app.route('/<path:path>')
-def serve_static_files(path):
-    return send_from_directory(app.static_folder, path)
 
 # Set up CORS. It's still good practice, especially for development.
 CORS(app) 
@@ -37,6 +31,10 @@ except Exception as e:
     model = None
 
 # --- Route 1: The "Front Door" to Serve the Webpage ---
+@app.route('/health')
+def health_check():
+    return "Alive", 200
+
 @app.route('/')
 def serve_index():
     """Serves the main index.html file from the 'static' folder."""
@@ -94,6 +92,10 @@ Here is the code to document:
     except Exception as e:
         print(f"An error occurred during AI generation: {e}")
         return jsonify({"error": f"An error occurred during AI generation: {e}"}), 500
+
+@app.route('/<path:path>')
+def serve_static_files(path):
+    return send_from_directory(app.static_folder, path)
 
 # This part is only for running the app locally on your computer
 if __name__ == '__main__':
