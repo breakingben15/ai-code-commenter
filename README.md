@@ -40,3 +40,5 @@ A robust web application that uses Google's **Gemini 2.5 Flash** AI to automatic
   ```bash
   python app.py
   ```
+  <img width="1470" height="956" alt="Screenshot 2025-11-18 at 2 15 47 PM" src="https://github.com/user-attachments/assets/72c1fe0f-50cb-441e-a530-845073eb3f1d" />
+
