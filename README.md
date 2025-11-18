@@ -23,3 +23,20 @@ A robust web application that uses Google's **Gemini 2.5 Flash** AI to automatic
    ```bash
    git clone [https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git](https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git)
    cd YOUR_REPO_NAME
+
+   Install dependencies
+
+2. **Install Dependencies**
+  ```bash
+  pip install -r requirements.txt
+  ```
+3. **Set up Environment Variables** 
+  ```bash
+  Create a .env file and add your Google API key:
+
+  GOOGLE_API_KEY=your_api_key_here
+  ```
+4. **Run the App**
+  ```bash
+  python app.py
+  ```
