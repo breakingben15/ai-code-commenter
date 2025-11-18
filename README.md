@@ -21,8 +21,8 @@ A robust web application that uses Google's **Gemini 2.5 Flash** AI to automatic
 
 1. **Clone the repository**
    ```bash
-   git clone [https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git](https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git)
-   cd YOUR_REPO_NAME
+   git clone [https://github.com/breakingben15/ai-code-commenter.git](https://github.com/breakingben15/ai-code-commenter.git)
+   cd ai-code-commenter
 
    Install dependencies
 
