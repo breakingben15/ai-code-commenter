@@ -13,6 +13,10 @@ load_dotenv()
 # Tell Flask where to find the static files (our index.html)
 app = Flask(__name__, static_folder='static')
 
+@app.route('/health')
+def health_check():
+    return "Alive", 200
+
 # Set up CORS. It's still good practice, especially for development.
 CORS(app) 
 
