@@ -17,6 +17,10 @@ app = Flask(__name__, static_folder='static')
 def health_check():
     return "Alive", 200
 
+@app.route('/<path:path>')
+def serve_static_files(path):
+    return send_from_directory(app.static_folder, path)
+
 # Set up CORS. It's still good practice, especially for development.
 CORS(app) 
 
